@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Combustível</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input[type="date"],
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .radio-option {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .radio-option.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .stats {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .stats h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .stat-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            color: #667eea;
+            font-weight: 700;
+        }
+
+        .history {
+            margin-top: 20px;
+        }
+
+        .history h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .history-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .history-date {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .history-details {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .consumption-good {
+            color: #28a745;
+            font-weight: 700;
+        }
+
+        .consumption-medium {
+            color: #ffc107;
+            font-weight: 700;
+        }
+
+        .consumption-bad {
+            color: #dc3545;
+            font-weight: 700;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            margin-top: 10px;
+        }
+
+        .btn-delete:hover {
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⛽ Controle de Combustível</h1>
+        
+        <form id="fuelForm">
+            <div class="form-group">
+                <label for="date">Data:</label>
+                <input type="date" id="date" required>
+            </div>
+
+            <div class="form-group">
+                <label>Tipo de Quilometragem:</label>
+                <div class="radio-group">
+                    <div class="radio-option active" data-type="total">
+                        Odômetro Total
+                    </div>
+                    <div class="radio-option" data-type="partial">
+                        Odômetro Parcial
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="km">Quilometragem (km):</label>
+                <input type="number" id="km" step="0.1" min="0" placeholder="Ex: 45230.5" required>
+            </div>
+
+            <div class="form-group">
+                <label for="liters">Litros Abastecidos:</label>
+                <input type="number" id="liters" step="0.01" min="0" placeholder="Ex: 35.50" required>
+            </div>
+
+            <button type="submit">💾 Salvar Abastecimento</button>
+        </form>
+
+        <div class="stats" id="statsSection" style="display: none;">
+            <h2>📊 Estatísticas</h2>
+            <div class="stat-item">
+                <span class="stat-label">Total de Abastecimentos:</span>
+                <span class="stat-value" id="totalRefuels">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Média de Consumo:</span>
+                <span class="stat-value" id="avgConsumption">-</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Melhor Consumo:</span>
+                <span class="stat-value" id="bestConsumption">-</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Total de Litros:</span>
+                <span class="stat-value" id="totalLiters">0 L</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Total Percorrido:</span>
+                <span class="stat-value" id="totalKm">0 km</span>
+            </div>
+        </div>
+
+        <div class="history" id="historySection" style="display: none;">
+            <h2>📝 Histórico</h2>
+            <div id="historyList"></div>
+            <button class="btn-delete" onclick="clearAllData()">🗑️ Limpar Todos os Dados</button>
+        </div>
+    </div>
+
+    <script>
+        // Variáveis globais
+        let kmType = 'total';
+        let fuelData = JSON.parse(localStorage.getItem('fuelData')) || [];
+
+        // Inicializar data atual
+        document.getElementById('date').valueAsDate = new Date();
+
+        // Seleção do tipo de quilometragem
+        document.querySelectorAll('.radio-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.radio-option').forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+                kmType = this.dataset.type;
+                
+                // Atualizar placeholder
+                const kmInput = document.getElementById('km');
+                if (kmType === 'partial') {
+                    kmInput.placeholder = 'Ex: 350.5 (odômetro parcial zerado)';
+                } else {
+                    kmInput.placeholder = 'Ex: 45230.5 (odômetro total)';
+                }
+            });
+        });
+
+        // Formatar data para exibição
+        function formatDate(dateString) {
+            const date = new Date(dateString + 'T00:00:00');
+            return date.toLocaleDateString('pt-BR');
+        }
+
+        // Classificar consumo
+        function classifyConsumption(kmPerLiter) {
+            if (kmPerLiter >= 12) return 'consumption-good';
+            if (kmPerLiter >= 8) return 'consumption-medium';
+            return 'consumption-bad';
+        }
+
+        // Calcular e salvar abastecimento
+        document.getElementById('fuelForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const date = document.getElementById('date').value;
+            const km = parseFloat(document.getElementById('km').value);
+            const liters = parseFloat(document.getElementById('liters').value);
+
+            if (!date || isNaN(km) || isNaN(liters) || liters <= 0) {
+                alert('Por favor, preencha todos os campos corretamente!');
+                return;
+            }
+
+            // Se for odômetro parcial, calcular km percorridos
+            let kmDriven = km;
+            if (kmType === 'partial' && fuelData.length > 0) {
+                const lastEntry = fuelData[fuelData.length - 1];
+                kmDriven = km; // Já é a distância percorrida desde o último abastecimento
+            }
+
+            // Criar novo registro
+            const newEntry = {
+                id: Date.now(),
+                date: date,
+                kmType: kmType,
+                km: km,
+                kmDriven: kmDriven,
+                liters: liters,
+                timestamp: new Date().toISOString()
+            };
+
+            // Adicionar ao array
+            fuelData.push(newEntry);
+
+            // Salvar no localStorage
+            localStorage.setItem('fuelData', JSON.stringify(fuelData));
+
+            // Limpar formulário
+            document.getElementById('km').value = '';
+            document.getElementById('liters').value = '';
+            document.getElementById('date').valueAsDate = new Date();
+
+            // Recarregar dados
+            loadStats();
+            loadHistory();
+
+            alert('✅ Abastecimento salvo com sucesso!');
+        });
+
+        // Carregar estatísticas
+        function loadStats() {
+            if (fuelData.length === 0) {
+                document.getElementById('statsSection').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('statsSection').style.display = 'block';
+            document.getElementById('totalRefuels').textContent = fuelData.length;
+
+            let totalLiters = 0;
+            let totalKm = 0;
+            let consumptions = [];
+
+            fuelData.forEach((entry, index) => {
+                totalLiters += entry.liters;
+                
+                if (index > 0) {
+                    const prevEntry = fuelData[index - 1];
+                    let kmDiff;
+                    
+                    if (entry.kmType === 'total' && prevEntry.kmType === 'total') {
+                        kmDiff = entry.km - prevEntry.km;
+                    } else if (entry.kmType === 'partial') {
+                        kmDiff = entry.kmDriven;
+                    } else {
+                        kmDiff = 0;
+                    }
+                    
+                    if (kmDiff > 0 && entry.liters > 0) {
+                        const consumption = kmDiff / entry.liters;
+                        consumptions.push(consumption);
+                        totalKm += kmDiff;
+                    }
+                }
+            });
+
+            const avgConsumption = consumptions.length > 0 
+                ? (consumptions.reduce((a, b) => a + b, 0) / consumptions.length).toFixed(2)
+                : '-';
+            
+            const bestConsumption = consumptions.length > 0
+                ? Math.max(...consumptions).toFixed(2)
+                : '-';
+
+            document.getElementById('avgConsumption').textContent = avgConsumption !== '-' ? `${avgConsumption} km/l` : '-';
+            document.getElementById('bestConsumption').textContent = bestConsumption !== '-' ? `${bestConsumption} km/l` : '-';
+            document.getElementById('totalLiters').textContent = `${totalLiters.toFixed(2)} L`;
+            document.getElementById('totalKm').textContent = `${totalKm.toFixed(1)} km`;
+        }
+
+        // Carregar histórico
+        function loadHistory() {
+            if (fuelData.length === 0) {
+                document.getElementById('historySection').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('historySection').style.display = 'block';
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+
+            // Mostrar em ordem reversa (mais recente primeiro)
+            [...fuelData].reverse().forEach((entry, index) => {
+                const actualIndex = fuelData.length - 1 - index;
+                let consumptionText = '';
+                let consumptionClass = '';
+
+                if (actualIndex > 0) {
+                    const prevEntry = fuelData[actualIndex - 1];
+                    let kmDiff;
+                    
+                    if (entry.kmType === 'total' && prevEntry.kmType === 'total') {
+                        kmDiff = entry.km - prevEntry.km;
+                    } else if (entry.kmType === 'partial') {
+                        kmDiff = entry.kmDriven;
+                    }
+                    
+                    if (kmDiff > 0 && entry.liters > 0) {
+                        const consumption = (kmDiff / entry.liters).toFixed(2);
+                        consumptionText = `Consumo: ${consumption} km/l`;
+                        consumptionClass = classifyConsumption(parseFloat(consumption));
+                    }
+                }
+
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.innerHTML = `
+                    <div class="history-date">${formatDate(entry.date)}</div>
+                    <div class="history-details">
+                        ${entry.kmType === 'total' ? `Odômetro: ${entry.km.toFixed(1)} km` : `Parcial: ${entry.km.toFixed(1)} km`} | 
+                        ${entry.liters.toFixed(2)} L
+                        ${consumptionText ? `<br><span class="${consumptionClass}">${consumptionText}</span>` : ''}
+                    </div>
+                `;
+                historyList.appendChild(historyItem);
+            });
+        }
+
+        // Limpar todos os dados
+        function clearAllData() {
+            if (confirm('Tem certeza que deseja apagar TODO o histórico? Esta ação não pode ser desfeita!')) {
+                fuelData = [];
+                localStorage.removeItem('fuelData');
+                loadStats();
+                loadHistory();
+                alert('Dados apagados com sucesso!');
+            }
+        }
+
+        // Carregar dados ao iniciar
+        loadStats();
+        loadHistory();
+    </script>
+</body>
+</html>
