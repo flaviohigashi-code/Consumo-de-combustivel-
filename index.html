@@ -38,6 +38,15 @@
             margin-bottom: 20px;
         }
 
+        .form-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
         label {
             display: block;
             margin-bottom: 8px;
@@ -134,6 +143,51 @@
         .stat-value {
             color: #667eea;
             font-weight: 700;
+            text-align: right;
+        }
+
+        .note {
+            margin-top: 12px;
+            font-size: 12px;
+            color: #888;
+            line-height: 1.4;
+        }
+
+        .months {
+            margin-top: 20px;
+        }
+
+        .months h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .month-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #764ba2;
+        }
+
+        .month-title {
+            font-weight: 600;
+            color: #333;
+            text-transform: capitalize;
+            margin-bottom: 8px;
+        }
+
+        .month-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px 12px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .month-grid strong {
+            color: #333;
         }
 
         .history {
@@ -152,6 +206,7 @@
             margin-bottom: 10px;
             border-radius: 8px;
             border-left: 4px solid #667eea;
+            position: relative;
         }
 
         .history-date {
@@ -163,6 +218,7 @@
         .history-details {
             color: #666;
             font-size: 14px;
+            line-height: 1.5;
         }
 
         .consumption-good {
@@ -171,7 +227,7 @@
         }
 
         .consumption-medium {
-            color: #ffc107;
+            color: #c79100;
             font-weight: 700;
         }
 
@@ -180,9 +236,50 @@
             font-weight: 700;
         }
 
+        .btn-small {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: auto;
+            margin: 0;
+            padding: 4px 10px;
+            font-size: 12px;
+            background: #e9ecef;
+            color: #666;
+        }
+
+        .btn-small:hover {
+            background: #dc3545;
+            color: white;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .backup {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .backup h2 {
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 20px;
+        }
+
+        .backup-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-secondary {
+            background: #495057;
+        }
+
         .btn-delete {
             background: #dc3545;
-            margin-top: 10px;
+            margin-top: 20px;
         }
 
         .btn-delete:hover {
@@ -197,13 +294,23 @@
             h1 {
                 font-size: 20px;
             }
+
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .backup-buttons {
+                flex-direction: column;
+                gap: 0;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>⛽ Controle de Combustível</h1>
-        
+
         <form id="fuelForm">
             <div class="form-group">
                 <label for="date">Data:</label>
@@ -227,9 +334,15 @@
                 <input type="number" id="km" step="0.1" min="0" placeholder="Ex: 45230.5" required>
             </div>
 
-            <div class="form-group">
-                <label for="liters">Litros Abastecidos:</label>
-                <input type="number" id="liters" step="0.01" min="0" placeholder="Ex: 35.50" required>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="liters">Litros Abastecidos:</label>
+                    <input type="number" id="liters" step="0.01" min="0" placeholder="Ex: 35.50" required>
+                </div>
+                <div class="form-group">
+                    <label for="price">Preço por Litro (R$):</label>
+                    <input type="number" id="price" step="0.001" min="0" placeholder="Ex: 6.19" required>
+                </div>
             </div>
 
             <button type="submit">💾 Salvar Abastecimento</button>
@@ -257,31 +370,142 @@
                 <span class="stat-label">Total Percorrido:</span>
                 <span class="stat-value" id="totalKm">0 km</span>
             </div>
+            <div class="stat-item">
+                <span class="stat-label">Gasto Total:</span>
+                <span class="stat-value" id="totalSpent">-</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Preço Médio por Litro:</span>
+                <span class="stat-value" id="avgPrice">-</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Custo por km Rodado:</span>
+                <span class="stat-value" id="costPerKm">-</span>
+            </div>
+            <p class="note" id="statsNote"></p>
+        </div>
+
+        <div class="months" id="monthsSection" style="display: none;">
+            <h2>📅 Gastos por Mês</h2>
+            <div id="monthsList"></div>
         </div>
 
         <div class="history" id="historySection" style="display: none;">
             <h2>📝 Histórico</h2>
             <div id="historyList"></div>
-            <button class="btn-delete" onclick="clearAllData()">🗑️ Limpar Todos os Dados</button>
+        </div>
+
+        <div class="backup">
+            <h2>💽 Backup dos Dados</h2>
+            <p class="note" style="margin: 0 0 10px;">
+                Os dados ficam salvos só neste navegador. Exporte um backup de tempos em tempos
+                (e use o mesmo arquivo para levar os dados para outro aparelho).
+            </p>
+            <div class="backup-buttons">
+                <button type="button" id="btnExport">⬇️ Exportar backup</button>
+                <button type="button" class="btn-secondary" id="btnImport">⬆️ Importar backup</button>
+            </div>
+            <input type="file" id="fileImport" accept="application/json,.json" style="display: none;">
+            <button class="btn-delete" id="btnClear" type="button" style="display: none;">🗑️ Limpar Todos os Dados</button>
         </div>
     </div>
 
     <script>
+        const STORAGE_KEY = 'fuelData';
+
         // Variáveis globais
         let kmType = 'total';
-        let fuelData = JSON.parse(localStorage.getItem('fuelData')) || [];
+        let fuelData = loadFromStorage();
 
-        // Inicializar data atual
-        document.getElementById('date').valueAsDate = new Date();
+        // ---------- Armazenamento ----------
+        function loadFromStorage() {
+            try {
+                const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY));
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (e) {
+                return [];
+            }
+        }
 
-        // Seleção do tipo de quilometragem
+        function saveToStorage() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(fuelData));
+                return true;
+            } catch (e) {
+                alert('Não foi possível salvar os dados neste navegador. Exporte um backup assim que possível.');
+                return false;
+            }
+        }
+
+        // Pede ao navegador para não apagar os dados automaticamente quando faltar espaço
+        if (navigator.storage && navigator.storage.persist) {
+            navigator.storage.persist().catch(() => {});
+        }
+
+        // ---------- Utilidades ----------
+        function todayLocal() {
+            const d = new Date();
+            const pad = n => String(n).padStart(2, '0');
+            return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+        }
+
+        const brl = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+        const num = (v, d = 2) => v.toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d });
+
+        function formatDate(dateString) {
+            const date = new Date(dateString + 'T00:00:00');
+            return date.toLocaleDateString('pt-BR');
+        }
+
+        function formatMonth(key) {
+            const [y, m] = key.split('-').map(Number);
+            return new Date(y, m - 1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+        }
+
+        function classifyConsumption(kmPerLiter) {
+            if (kmPerLiter >= 12) return 'consumption-good';
+            if (kmPerLiter >= 8) return 'consumption-medium';
+            return 'consumption-bad';
+        }
+
+        function hasPrice(entry) {
+            return typeof entry.price === 'number' && entry.price > 0;
+        }
+
+        // Km rodados que o abastecimento "i" cobre (desde o abastecimento anterior)
+        function getKmDriven(i) {
+            if (i === 0) return 0;
+            const entry = fuelData[i];
+            const prev = fuelData[i - 1];
+            let kmDiff = 0;
+            if (entry.kmType === 'total' && prev.kmType === 'total') {
+                kmDiff = entry.km - prev.km;
+            } else if (entry.kmType === 'partial') {
+                kmDiff = entry.kmDriven;
+            }
+            return kmDiff > 0 ? kmDiff : 0;
+        }
+
+        // ---------- Formulário ----------
+        document.getElementById('date').value = todayLocal();
+        prefillPrice();
+
+        function prefillPrice() {
+            // Sugere o último preço informado
+            for (let i = fuelData.length - 1; i >= 0; i--) {
+                if (hasPrice(fuelData[i])) {
+                    document.getElementById('price').value = fuelData[i].price;
+                    return;
+                }
+            }
+        }
+
         document.querySelectorAll('.radio-option').forEach(option => {
             option.addEventListener('click', function() {
                 document.querySelectorAll('.radio-option').forEach(opt => opt.classList.remove('active'));
                 this.classList.add('active');
                 kmType = this.dataset.type;
-                
-                // Atualizar placeholder
+
                 const kmInput = document.getElementById('km');
                 if (kmType === 'partial') {
                     kmInput.placeholder = 'Ex: 350.5 (odômetro parcial zerado)';
@@ -291,181 +515,275 @@
             });
         });
 
-        // Formatar data para exibição
-        function formatDate(dateString) {
-            const date = new Date(dateString + 'T00:00:00');
-            return date.toLocaleDateString('pt-BR');
-        }
-
-        // Classificar consumo
-        function classifyConsumption(kmPerLiter) {
-            if (kmPerLiter >= 12) return 'consumption-good';
-            if (kmPerLiter >= 8) return 'consumption-medium';
-            return 'consumption-bad';
-        }
-
-        // Calcular e salvar abastecimento
         document.getElementById('fuelForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
             const date = document.getElementById('date').value;
             const km = parseFloat(document.getElementById('km').value);
             const liters = parseFloat(document.getElementById('liters').value);
+            const price = parseFloat(document.getElementById('price').value);
 
-            if (!date || isNaN(km) || isNaN(liters) || liters <= 0) {
+            if (!date || isNaN(km) || isNaN(liters) || liters <= 0 || isNaN(price) || price <= 0) {
                 alert('Por favor, preencha todos os campos corretamente!');
                 return;
             }
 
-            // Se for odômetro parcial, calcular km percorridos
-            let kmDriven = km;
-            if (kmType === 'partial' && fuelData.length > 0) {
-                const lastEntry = fuelData[fuelData.length - 1];
-                kmDriven = km; // Já é a distância percorrida desde o último abastecimento
-            }
-
-            // Criar novo registro
-            const newEntry = {
+            fuelData.push({
                 id: Date.now(),
                 date: date,
                 kmType: kmType,
                 km: km,
-                kmDriven: kmDriven,
+                kmDriven: km, // no parcial, já é a distância desde o último abastecimento
                 liters: liters,
+                price: price,
                 timestamp: new Date().toISOString()
-            };
+            });
 
-            // Adicionar ao array
-            fuelData.push(newEntry);
+            if (!saveToStorage()) {
+                fuelData.pop();
+                return;
+            }
 
-            // Salvar no localStorage
-            localStorage.setItem('fuelData', JSON.stringify(fuelData));
-
-            // Limpar formulário
             document.getElementById('km').value = '';
             document.getElementById('liters').value = '';
-            document.getElementById('date').valueAsDate = new Date();
+            document.getElementById('date').value = todayLocal();
+            // o preço continua preenchido com o último valor
 
-            // Recarregar dados
-            loadStats();
-            loadHistory();
-
+            render();
             alert('✅ Abastecimento salvo com sucesso!');
         });
 
-        // Carregar estatísticas
+        // ---------- Estatísticas ----------
         function loadStats() {
+            const section = document.getElementById('statsSection');
             if (fuelData.length === 0) {
-                document.getElementById('statsSection').style.display = 'none';
+                section.style.display = 'none';
                 return;
             }
-
-            document.getElementById('statsSection').style.display = 'block';
+            section.style.display = 'block';
             document.getElementById('totalRefuels').textContent = fuelData.length;
 
-            let totalLiters = 0;
-            let totalKm = 0;
-            let consumptions = [];
+            let totalLiters = 0, totalKm = 0, totalSpent = 0, litersPriced = 0;
+            let spentValid = 0, kmValid = 0; // trechos com preço E km válidos (custo/km)
+            const consumptions = [];
 
-            fuelData.forEach((entry, index) => {
+            fuelData.forEach((entry, i) => {
                 totalLiters += entry.liters;
-                
-                if (index > 0) {
-                    const prevEntry = fuelData[index - 1];
-                    let kmDiff;
-                    
-                    if (entry.kmType === 'total' && prevEntry.kmType === 'total') {
-                        kmDiff = entry.km - prevEntry.km;
-                    } else if (entry.kmType === 'partial') {
-                        kmDiff = entry.kmDriven;
-                    } else {
-                        kmDiff = 0;
-                    }
-                    
-                    if (kmDiff > 0 && entry.liters > 0) {
-                        const consumption = kmDiff / entry.liters;
-                        consumptions.push(consumption);
-                        totalKm += kmDiff;
+                if (hasPrice(entry)) {
+                    totalSpent += entry.liters * entry.price;
+                    litersPriced += entry.liters;
+                }
+
+                const kmDiff = getKmDriven(i);
+                if (kmDiff > 0 && entry.liters > 0) {
+                    consumptions.push(kmDiff / entry.liters);
+                    totalKm += kmDiff;
+                    if (hasPrice(entry)) {
+                        spentValid += entry.liters * entry.price;
+                        kmValid += kmDiff;
                     }
                 }
             });
 
-            const avgConsumption = consumptions.length > 0 
-                ? (consumptions.reduce((a, b) => a + b, 0) / consumptions.length).toFixed(2)
-                : '-';
-            
-            const bestConsumption = consumptions.length > 0
-                ? Math.max(...consumptions).toFixed(2)
-                : '-';
+            const avg = consumptions.length ? consumptions.reduce((a, b) => a + b, 0) / consumptions.length : null;
+            const best = consumptions.length ? Math.max(...consumptions) : null;
 
-            document.getElementById('avgConsumption').textContent = avgConsumption !== '-' ? `${avgConsumption} km/l` : '-';
-            document.getElementById('bestConsumption').textContent = bestConsumption !== '-' ? `${bestConsumption} km/l` : '-';
-            document.getElementById('totalLiters').textContent = `${totalLiters.toFixed(2)} L`;
-            document.getElementById('totalKm').textContent = `${totalKm.toFixed(1)} km`;
+            document.getElementById('avgConsumption').textContent = avg !== null ? `${num(avg)} km/l` : '-';
+            document.getElementById('bestConsumption').textContent = best !== null ? `${num(best)} km/l` : '-';
+            document.getElementById('totalLiters').textContent = `${num(totalLiters)} L`;
+            document.getElementById('totalKm').textContent = `${num(totalKm, 1)} km`;
+            document.getElementById('totalSpent').textContent = litersPriced > 0 ? brl.format(totalSpent) : '-';
+            document.getElementById('avgPrice').textContent = litersPriced > 0 ? `${brl.format(totalSpent / litersPriced)}/L` : '-';
+            document.getElementById('costPerKm').textContent = kmValid > 0 ? `${brl.format(spentValid / kmValid)}/km` : '-';
+
+            const semPreco = fuelData.filter(e => !hasPrice(e)).length;
+            document.getElementById('statsNote').textContent = semPreco > 0
+                ? `${semPreco} abastecimento(s) antigo(s) sem preço ficam fora dos cálculos de gasto.`
+                : '';
         }
 
-        // Carregar histórico
-        function loadHistory() {
-            if (fuelData.length === 0) {
-                document.getElementById('historySection').style.display = 'none';
+        // ---------- Gastos por mês ----------
+        function loadMonths() {
+            const section = document.getElementById('monthsSection');
+            const list = document.getElementById('monthsList');
+            const months = {};
+
+            fuelData.forEach((entry, i) => {
+                const key = entry.date.slice(0, 7);
+                const m = months[key] || (months[key] = { liters: 0, spent: 0, km: 0, spentValid: 0, kmValid: 0, count: 0, priced: 0 });
+                m.count++;
+                m.liters += entry.liters;
+                if (hasPrice(entry)) {
+                    m.spent += entry.liters * entry.price;
+                    m.priced++;
+                }
+                const kmDiff = getKmDriven(i);
+                if (kmDiff > 0) {
+                    m.km += kmDiff;
+                    if (hasPrice(entry)) {
+                        m.spentValid += entry.liters * entry.price;
+                        m.kmValid += kmDiff;
+                    }
+                }
+            });
+
+            const keys = Object.keys(months).sort().reverse();
+            if (keys.length === 0) {
+                section.style.display = 'none';
                 return;
             }
 
-            document.getElementById('historySection').style.display = 'block';
+            section.style.display = 'block';
+            list.innerHTML = '';
+            keys.forEach(key => {
+                const m = months[key];
+                const item = document.createElement('div');
+                item.className = 'month-item';
+                item.innerHTML = `
+                    <div class="month-title">${formatMonth(key)}</div>
+                    <div class="month-grid">
+                        <div>Gasto: <strong>${m.priced ? brl.format(m.spent) : '-'}</strong></div>
+                        <div>Abastecimentos: <strong>${m.count}</strong></div>
+                        <div>Litros: <strong>${num(m.liters)} L</strong></div>
+                        <div>Rodado: <strong>${m.km > 0 ? num(m.km, 1) + ' km' : '-'}</strong></div>
+                        <div style="grid-column: 1 / -1;">Custo por km: <strong>${m.kmValid > 0 ? brl.format(m.spentValid / m.kmValid) + '/km' : '-'}</strong></div>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        // ---------- Histórico ----------
+        function loadHistory() {
+            const section = document.getElementById('historySection');
+            if (fuelData.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+
+            section.style.display = 'block';
             const historyList = document.getElementById('historyList');
             historyList.innerHTML = '';
 
-            // Mostrar em ordem reversa (mais recente primeiro)
-            [...fuelData].reverse().forEach((entry, index) => {
-                const actualIndex = fuelData.length - 1 - index;
+            for (let i = fuelData.length - 1; i >= 0; i--) {
+                const entry = fuelData[i];
+                const kmDiff = getKmDriven(i);
+
                 let consumptionText = '';
                 let consumptionClass = '';
+                if (kmDiff > 0 && entry.liters > 0) {
+                    const consumption = kmDiff / entry.liters;
+                    consumptionText = `Consumo: ${num(consumption)} km/l`;
+                    consumptionClass = classifyConsumption(consumption);
+                }
 
-                if (actualIndex > 0) {
-                    const prevEntry = fuelData[actualIndex - 1];
-                    let kmDiff;
-                    
-                    if (entry.kmType === 'total' && prevEntry.kmType === 'total') {
-                        kmDiff = entry.km - prevEntry.km;
-                    } else if (entry.kmType === 'partial') {
-                        kmDiff = entry.kmDriven;
-                    }
-                    
-                    if (kmDiff > 0 && entry.liters > 0) {
-                        const consumption = (kmDiff / entry.liters).toFixed(2);
-                        consumptionText = `Consumo: ${consumption} km/l`;
-                        consumptionClass = classifyConsumption(parseFloat(consumption));
+                let priceText = '';
+                if (hasPrice(entry)) {
+                    const total = entry.liters * entry.price;
+                    priceText = `${brl.format(entry.price)}/L · <strong>${brl.format(total)}</strong>`;
+                    if (kmDiff > 0) {
+                        priceText += ` · ${brl.format(total / kmDiff)}/km`;
                     }
                 }
 
-                const historyItem = document.createElement('div');
-                historyItem.className = 'history-item';
-                historyItem.innerHTML = `
+                const item = document.createElement('div');
+                item.className = 'history-item';
+                item.innerHTML = `
+                    <button type="button" class="btn-small" data-id="${entry.id}">Excluir</button>
                     <div class="history-date">${formatDate(entry.date)}</div>
                     <div class="history-details">
-                        ${entry.kmType === 'total' ? `Odômetro: ${entry.km.toFixed(1)} km` : `Parcial: ${entry.km.toFixed(1)} km`} | 
-                        ${entry.liters.toFixed(2)} L
+                        ${entry.kmType === 'total' ? `Odômetro: ${num(entry.km, 1)} km` : `Parcial: ${num(entry.km, 1)} km`} |
+                        ${num(entry.liters)} L
+                        ${priceText ? `<br>${priceText}` : ''}
                         ${consumptionText ? `<br><span class="${consumptionClass}">${consumptionText}</span>` : ''}
                     </div>
                 `;
-                historyList.appendChild(historyItem);
-            });
-        }
-
-        // Limpar todos os dados
-        function clearAllData() {
-            if (confirm('Tem certeza que deseja apagar TODO o histórico? Esta ação não pode ser desfeita!')) {
-                fuelData = [];
-                localStorage.removeItem('fuelData');
-                loadStats();
-                loadHistory();
-                alert('Dados apagados com sucesso!');
+                historyList.appendChild(item);
             }
         }
 
-        // Carregar dados ao iniciar
-        loadStats();
-        loadHistory();
+        document.getElementById('historyList').addEventListener('click', function(e) {
+            const btn = e.target.closest('.btn-small');
+            if (!btn) return;
+            if (!confirm('Excluir este abastecimento?')) return;
+            const id = Number(btn.dataset.id);
+            fuelData = fuelData.filter(entry => entry.id !== id);
+            saveToStorage();
+            render();
+        });
+
+        // ---------- Backup ----------
+        document.getElementById('btnExport').addEventListener('click', function() {
+            if (fuelData.length === 0) {
+                alert('Não há dados para exportar ainda.');
+                return;
+            }
+            const blob = new Blob([JSON.stringify(fuelData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `controle-combustivel-${todayLocal()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        });
+
+        document.getElementById('btnImport').addEventListener('click', function() {
+            document.getElementById('fileImport').click();
+        });
+
+        document.getElementById('fileImport').addEventListener('change', function() {
+            const file = this.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = () => {
+                try {
+                    const imported = JSON.parse(reader.result);
+                    if (!Array.isArray(imported)) throw new Error('formato');
+
+                    const valid = imported.filter(e =>
+                        e && typeof e.date === 'string' &&
+                        typeof e.km === 'number' && typeof e.liters === 'number' && e.liters > 0
+                    );
+                    if (valid.length === 0) throw new Error('vazio');
+
+                    const existingIds = new Set(fuelData.map(e => e.id));
+                    const novos = valid.filter(e => !existingIds.has(e.id));
+
+                    fuelData = fuelData.concat(novos)
+                        .sort((a, b) => a.date.localeCompare(b.date) || (a.id - b.id));
+                    saveToStorage();
+                    render();
+                    alert(`Backup importado: ${novos.length} abastecimento(s) novo(s) adicionado(s).`);
+                } catch (err) {
+                    alert('Arquivo inválido. Use um backup exportado por este app.');
+                }
+            };
+            reader.readAsText(file);
+            this.value = '';
+        });
+
+        // ---------- Limpar ----------
+        document.getElementById('btnClear').addEventListener('click', function() {
+            if (confirm('Tem certeza que deseja apagar TODO o histórico? Esta ação não pode ser desfeita!\n\nDica: exporte um backup antes.')) {
+                fuelData = [];
+                try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+                render();
+                alert('Dados apagados com sucesso!');
+            }
+        });
+
+        // ---------- Render ----------
+        function render() {
+            loadStats();
+            loadMonths();
+            loadHistory();
+            document.getElementById('btnClear').style.display = fuelData.length ? 'block' : 'none';
+        }
+
+        render();
     </script>
 </body>
 </html>
